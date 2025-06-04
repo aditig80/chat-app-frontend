@@ -43,7 +43,7 @@ function App() {
     socket.emit('send_message', msgData);
     setChat((prev) => [...prev, { from: userId, message }]);
     try {
-      await axios.post('http://localhost:5001/api/messages/send', msgData, {
+      await axios.post('https://chat-app-backend-5ox2.onrender.com/api/messages/send', msgData, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
     } catch (err) {
@@ -56,7 +56,7 @@ function App() {
     const endpoint = isLogin ? 'login' : 'register';
     if (!inputUsername || !password) return alert('Username and password required');
     try {
-      const res = await axios.post(`http://localhost:5001/api/auth/${endpoint}`, {
+      const res = await axios.post(`https://chat-app-backend-5ox2.onrender.com/api/auth/${endpoint}`, {
         username: inputUsername,
         password,
       });
