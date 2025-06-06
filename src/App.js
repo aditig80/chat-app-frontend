@@ -102,7 +102,7 @@ const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   
     const messageHistory = chat.slice(-10).map(msg => `${msg.from}: ${msg.message}`);
 
-    const res = await axios.post('http://localhost:5001/api/suggestions', { messageHistory });
+    const res = await axios.post('https://chat-app-backend-5ox2.onrender.com/api/suggestions', { messageHistory });
     setSuggestions(res.data.suggestions || []);
   } catch (err) {
     console.error('Failed to fetch suggestions:', err);
