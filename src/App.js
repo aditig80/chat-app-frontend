@@ -11,6 +11,8 @@ function App() {
   const [chat, setChat] = useState([]);
   const [isLogin, setIsLogin] = useState(true);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   useEffect(() => {
   socket.on('online_users', (users) => {
     setOnlineUsers(users);
@@ -24,6 +26,14 @@ function App() {
       socket.emit('join', userId);
     }
   }, [userId]);
+  
+  useEffect(() => {
+  if (receiverId) {
+    fetchSuggestions();
+  } else {
+    setSuggestions([]);
+  }
+}, [chat, receiverId]);
   
 
   useEffect(() => {
@@ -83,6 +93,24 @@ function App() {
     setInputUsername('');
     setPassword('');
   };
+  const fetchSuggestions = async () => {
+  if (!chat.length) return;
+
+  setLoadingSuggestions(true);
+
+  try {
+  
+    const messageHistory = chat.slice(-10).map(msg => `${msg.from}: ${msg.message}`);
+
+    const res = await axios.post('http://localhost:5001/api/suggestions', { messageHistory });
+    setSuggestions(res.data.suggestions || []);
+  } catch (err) {
+    console.error('Failed to fetch suggestions:', err);
+    setSuggestions([]);
+  } finally {
+    setLoadingSuggestions(false);
+  }
+};
 
   if (!userId) {
     return (
@@ -159,20 +187,38 @@ function App() {
           ))}
         </div>
 
-        <div className="flex gap-2">
-          <input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type a message"
-            className="flex-grow p-2 border rounded"
-          />
-          <button
-            onClick={sendMessage}
-            className="bg-blue-500 text-white px-4 rounded hover:bg-blue-600"
-          >
-            Send
-          </button>
-        </div>
+      {/* Suggestions below input */}
+{loadingSuggestions && <p className="text-sm text-gray-500 mb-2">Loading suggestions...</p>}
+
+{suggestions.length > 0 && (
+  <div className="mb-2 flex gap-2 flex-wrap">
+    {suggestions.map((sug, i) => (
+      <button
+        key={i}
+        onClick={() => setMessage(sug)}
+        className="bg-green-300 px-3 py-1 rounded hover:bg-green-400 transition"
+      >
+        {sug}
+      </button>
+    ))}
+  </div>
+)}
+
+<div className="flex gap-2">
+  <input
+    value={message}
+    onChange={(e) => setMessage(e.target.value)}
+    placeholder="Type a message"
+    className="flex-grow p-2 border rounded"
+  />
+  <button
+    onClick={sendMessage}
+    className="bg-blue-500 text-white px-4 rounded hover:bg-blue-600"
+  >
+    Send
+  </button>
+</div>
+
       </div>
 
       {/* Online Users Panel */}
